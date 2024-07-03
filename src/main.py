@@ -8,6 +8,9 @@ import re
 import smtplib 
 import matplotlib.pyplot as plt
 from tabulate import tabulate
+from colorama import Fore
+from art import text2art
+
 
 def clear_terminal():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -388,6 +391,7 @@ class Main:
     def run(self):
         System.initialize_files()
         while True:
+            print(Fore.LIGHTMAGENTA_EX+text2art("Academy System ",font="small"))
             questions = [
                 inquirer.List('choice',
                               message="Login as",
@@ -420,6 +424,7 @@ class Main:
 
     def admin_flow(self):
         while True:
+            print(Fore.LIGHTMAGENTA_EX+text2art("Admin Terminal ",font="small"))
             admin_choice = Admin.menu()
             if admin_choice == "Add Course":
                 Admin.add_course()
@@ -445,6 +450,7 @@ class Main:
 
     def instructor_flow(self):
         while True:
+            print(Fore.LIGHTMAGENTA_EX+text2art("Instructor Terminal ",font="small"))
             instructor_choice = Instructor.menu()
             if instructor_choice == "Assign Grade":
                 Instructor.assign_grade()
@@ -456,6 +462,7 @@ class Main:
 
     def student_flow(self):
         while True:
+            print(Fore.LIGHTMAGENTA_EX+text2art("Student Terminal ",font="small"))
             student_choice = Student.menu()
             if student_choice == "View My Grades":
                 student_id = input("Enter your student ID: ")
