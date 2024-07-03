@@ -1,40 +1,70 @@
 # UNIT-1-PROJECT
 
 
+<h2> Academic Management System </h2>
 
-## Based on what you’ve learned until now , create a project of your choosing (impress us with your imagination) . This project must at least satisfy the following minimum requirements :
+<h3> Overview </h3>
 
-- Must be interactive on CLI.
-- Use your coding skills in Python accurately.
-- Organize Your Code into modules & (or packages)
+An academic management system for instructors and students. Instructors can add grades to each student and view statistics about grades for a specific course. and students can view their grades. The system aims to facilitate communication between instructors and students 
 
-## Example Project :  An online Grocery Store :
+<h3>Users </h3>
 
-#### Overview : An online store that sells fruits to customers. This online store has 2 main users. The customer and the manager of the store . Each one of them should be able to do the following tasks for the store to function properly . 
+Admin
+Instructor
+Student
 
-#### As a customer I should be able to do the following :
-- Browse  Products . 
-- View the product info (summary, specs, price, quantity , etc.)
-- Search for Products.
-- Get recommendations for my next purchase based on my purchase history.
-- Add Products to the shopping cart .
-- Remove a product from the shopping cart.
-- List the products in my shopping cart. 
-- Continue to checkout . 
-- Fill in my address for delivery.
-- Get receipt of my purchases.
-- Check delivery status . 
+<h4>As an Admin, I should be able to do the following:</h4>
 
-
-
-#### Usage :
- Explain to the user how to use your project . 
- for example:
- - type in search product_name to search for a product.
- - type in list_products to show all the products in the grocery.
- - type in show product_name to get information about this product.
- - type in buy product_name to buy the product . 
- - and so on...
+Add courses
+Add Instructor
+Add Student
+List all courses.
+List all Instructor.
+List all Student.
+Delete Student
+Remove Instructor from Course
+Delete Course
 
 
-### For your project. Edit this README.md file to include your own project name,  overview, user stories, and usage. 
+<h4>As an Instructor, I should be able to do the following:</h4>
+
+List all courses.
+Add grades for students in a specific course.
+View statistics about grades for a specific course.
+
+
+<h4>As a Student, I should be able to do the following:</h4>
+
+List all my courses.
+View my grades for a specific course.
+
+
+<h3>Usage </h3>
+
+Explain to the user how to use the project. For example:
+
+Login as admin 
+    Add new course
+    Add new Instructor to a course 
+    Add new Student to a course
+    The system will Send Email with login information automatically to user (Instructor or Student) 
+    Select from admin menu 
+        Add courses
+        Add Instructor
+        Add Student
+        List all courses.
+        List all Instructor.
+        List all Student.
+        Delete Student
+        Remove Instructor from Course
+        Delete Course
+
+Login as Instructor 
+    select from student menu 
+        assign grade to student by id 
+        View statistics
+    
+Login as Student 
+    select from student menu 
+        View my grades
+
