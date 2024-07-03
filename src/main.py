@@ -391,6 +391,7 @@ class Main:
     def run(self):
         System.initialize_files()
         while True:
+            clear_terminal()
             print(Fore.LIGHTMAGENTA_EX+text2art("Academy System ",font="small"))
             questions = [
                 inquirer.List('choice',
@@ -424,6 +425,7 @@ class Main:
 
     def admin_flow(self):
         while True:
+            clear_terminal()
             print(Fore.LIGHTMAGENTA_EX+text2art("Admin Terminal ",font="small"))
             admin_choice = Admin.menu()
             if admin_choice == "Add Course":
