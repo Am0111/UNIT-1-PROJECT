@@ -133,41 +133,43 @@ class Admin:
             server.sendmail(sender_email,receiver_email,text)
 
         except Exception as e :
-            print("Error: ",e)
+            print(Fore.RED+"Error: ",e,Fore.RESET)
         else:
-            print(f"Account information sent successfully to {receiver_email}")
+            print(Fore.GREEN+f"Account information sent successfully to {receiver_email}"+Fore.RESET)
 
     @staticmethod
     def add_course():
         courses = System.load_json(COURSES_FILE)
         course_id = System.generate_id(courses)
         course_name = input("Enter course name: ")
-        courses[course_id] = {"name": course_name, "instructors": []}
+        while len(course_name.strip()) < 3 and course_name.isnumeric:
+            course_name = input(Fore.RED+"Please enter valid course name with at least four character: "+Fore.RESET)
+        courses[course_id] = {"name": course_name}
         System.save_json(COURSES_FILE, courses)
-        print(f"Course '{course_name}' added with ID: {course_id}")
+        print(Fore.GREEN+f"Course '{course_name}' added with ID: {course_id}"+Fore.RESET)
 
     @staticmethod
     def add_instructor_to_course(instructor_id, course_id):
         courses = System.load_json(COURSES_FILE)
         if course_id not in courses:
-            raise Exception(f"Course ID '{course_id}' not found in the database")
+            print(f"Course ID '{course_id}' not found in the database")
         else:
-            courses[course_id]["instructors"].append(instructor_id)
+            courses[course_id]["instructors"] = instructor_id
             System.save_json(COURSES_FILE, courses)
             instructors = System.load_json(INSTRUCTORS_FILE)
             instructor_name = instructors[instructor_id]["name"]
-            print(f"Instructor: {instructor_name} added to course: {courses[course_id]['name']} successfully")
+            print(Fore.GREEN+f"Instructor: {instructor_name} added to course: {courses[course_id]['name']} successfully, please wait until sending email is done..."+Fore.RESET)
     @staticmethod
     def add_student_to_course(student_id, course_id):
         courses = System.load_json(COURSES_FILE)
         if course_id not in courses:
-            raise Exception(f"Course ID '{course_id}' not found in the database")
+            print(Fore.RED+f"Course ID '{course_id}' not found in the database"+Fore.RESET)
         else:
             courses[course_id][student_id] = {"grade":None}
             System.save_json(COURSES_FILE, courses)
             students = System.load_json(STUDENTS_FILE)
             student_name = students[student_id]["name"]
-            print(f"Student: {student_name} added to course: {courses[course_id]['name']} successfully")
+            print(Fore.GREEN+f"Student: {student_name} added to course: {courses[course_id]['name']} successfully, please wait until sending email is done..."+Fore.RESET)
 
     @staticmethod 
     def is_valid_email(email):
@@ -185,97 +187,115 @@ class Admin:
     def add_instructor():
         instructors = System.load_json(INSTRUCTORS_FILE)
         students = System.load_json(STUDENTS_FILE)
-        existing_usernames = {user["username"] for user in instructors.values()}.union({user["username"] for user in students.values()})
-        instructor_id = System.generate_id(instructors)
-        instructor_name = input("Enter instructor name: ")
-        instructor_email = input("Enter instructor email: ")
-        while not Admin.is_valid_email(instructor_email):
-            instructor_email = input("Please Enter valid instructor email: ")    
-        instructor_username = System.generate_username(instructor_name, existing_usernames)
-        instructor_password = System.generate_password()
-        instructors[instructor_id] = {"name": instructor_name, "email": instructor_email, "username": instructor_username, "password": instructor_password}
-        System.save_json(INSTRUCTORS_FILE, instructors)
-        print(f"Instructor '{instructor_name}' added with ID: {instructor_id}")
-        Admin.list_courses()
-        course_id = input(f"Enter Course ID To assign To {instructor_name} : ")
-        Admin.add_instructor_to_course(instructor_id, course_id) 
-        message = f"instructor username : {instructor_username} \n instructor password : {instructor_password}"
-        Admin.send_account_info_to_email(instructor_email,message)   
-        # should account info send to email
+        courses = System.load_json(COURSES_FILE)
+        if courses:
+            existing_usernames = {user["username"] for user in instructors.values()}.union({user["username"] for user in students.values()})
+            instructor_id = System.generate_id(instructors)
+            instructor_name = input("Enter instructor name: ")
+            while len(instructor_name.strip()) < 4 and instructor_name.isnumeric:
+                instructor_name = input(Fore.RED+"Please enter valid instructor name with at least four character: "+Fore.RESET)
+            instructor_email = input("Enter instructor email: ")
+            while not Admin.is_valid_email(instructor_email):
+                instructor_email = input(Fore.RED+"Please Enter valid instructor email: "+Fore.RESET)    
+            instructor_username = System.generate_username(instructor_name, existing_usernames)
+            instructor_password = System.generate_password()
+            instructors[instructor_id] = {"name": instructor_name, "email": instructor_email, "username": instructor_username, "password": instructor_password}
+            System.save_json(INSTRUCTORS_FILE, instructors)
+            print(Fore.GREEN+f"Instructor '{instructor_name}' added with ID: {instructor_id}"+Fore.RESET)
+            Admin.list_courses()
+            course_id = input(f"Enter Course ID To assign To {instructor_name} : ")
+            Admin.add_instructor_to_course(instructor_id, course_id) 
+            message = f"instructor username : {instructor_username} \n instructor password : {instructor_password}"
+            Admin.send_account_info_to_email(instructor_email,message)
+        else:
+            print(Fore.RED+"You should add at least one course to be able to add an instructor"+Fore.RESET)
+            Admin.add_course()
+            # should account info send to email
 
     @staticmethod
     def add_student():
         instructors = System.load_json(INSTRUCTORS_FILE)
         students = System.load_json(STUDENTS_FILE)
-        existing_usernames = {user["username"] for user in instructors.values()}.union({user["username"] for user in students.values()})
-        student_id = System.generate_id(students)
-        student_name = input("Enter student name: ")
-        student_email = input("Enter student email: ")
-        while not Admin.is_valid_email(student_email):
-            student_email = input("Please Enter valid Student email: ")   
-        student_username = System.generate_username(student_name, existing_usernames)
-        student_password = System.generate_password()
-        students[student_id] = {"name": student_name, "email": student_email, "username": student_username, "password": student_password}
-        System.save_json(STUDENTS_FILE, students)
-        print(f"Student '{student_name}' added with ID: {student_id}")
-        Admin.list_courses()
-        course_id = input(f"Enter Course ID To assign To {student_name} : ")
-        Admin.add_student_to_course(student_id, course_id)
-        message = f"student username : {student_username} \n student password : {student_password}"
-        Admin.send_account_info_to_email(student_email,message)  
-        # should account info send to email
+        courses = System.load_json(COURSES_FILE)
+        if courses:
+            existing_usernames = {user["username"] for user in instructors.values()}.union({user["username"] for user in students.values()})
+            student_id = System.generate_id(students)
+            student_name = input("Enter student name: ")
+            while len(student_name.strip()) < 4 and student_name.isnumeric:
+                student_name = input(Fore.RED+"Please enter valid student name with at least four character: "+Fore.RESET)
+            student_email = input("Enter student email: ")
+            while not Admin.is_valid_email(student_email):
+                student_email = input(Fore.RED+"Please Enter valid Student email: "+Fore.RESET)   
+            student_username = System.generate_username(student_name, existing_usernames)
+            student_password = System.generate_password()
+            students[student_id] = {"name": student_name, "email": student_email, "username": student_username, "password": student_password}
+            System.save_json(STUDENTS_FILE, students)
+            print(Fore.GREEN+f"Student '{student_name}' added with ID: {student_id}"+Fore.RESET)
+            Admin.list_courses()
+            course_id = input(f"Enter Course ID To assign To {student_name} : ")
+            Admin.add_student_to_course(student_id, course_id)
+            message = f"student username : {student_username} \n student password : {student_password}"
+            Admin.send_account_info_to_email(student_email,message)  
+            # should account info send to email
+        else:
+            print(Fore.RED+"You should add at least one course to be able to add a student"+Fore.RESET)
+            Admin.add_course()
 
     @staticmethod
     def list_students():
         students = System.load_json(STUDENTS_FILE)
         student_list = [[student_id, student_info['name'], student_info['email']] for student_id, student_info in students.items()]
-        print(tabulate(student_list, headers=["Student ID", "Student Name", "Email"], tablefmt="grid"))
+        print(Fore.BLUE+tabulate(student_list, headers=["Student ID", "Student Name", "Email"], tablefmt="grid")+Fore.RESET)
 
     @staticmethod
     def list_instructors():
         instructors = System.load_json(INSTRUCTORS_FILE)
         instructor_list = [[instructor_id, instructor_info['name'], instructor_info['email']] for instructor_id, instructor_info in instructors.items()]
-        print(tabulate(instructor_list, headers=["Instructor ID", "Instructor Name", "Email"], tablefmt="grid"))
+        print(Fore.BLUE+tabulate(instructor_list, headers=["Instructor ID", "Instructor Name", "Email"], tablefmt="grid")+Fore.RESET)
 
     @staticmethod
     def list_courses():
         courses = System.load_json(COURSES_FILE)
         course_list = [[course_id, course_info['name']] for course_id, course_info in courses.items()]
-        print(tabulate(course_list, headers=["Course ID", "Course Name"], tablefmt="grid"))
+        print(Fore.BLUE+tabulate(course_list, headers=["Course ID", "Course Name"], tablefmt="grid")+Fore.RESET)
 
     @staticmethod
     def delete_student():
+        Admin.list_students()
         students = System.load_json(STUDENTS_FILE)
         student_id = input("Enter student ID to delete: ")
         if student_id in students:
             del students[student_id]
             System.save_json(STUDENTS_FILE, students)
-            print("Student deleted successfully")
+            print(Fore.GREEN+"Student deleted successfully"+Fore.RESET)
         else:
-            print("Student not found")
+            print(Fore.RED+"Student not found"+Fore.RESET)
 
     @staticmethod
     def remove_instructor_from_course():
         courses = System.load_json(COURSES_FILE)
+        Admin.list_courses()
         course_id = input("Enter course ID: ")
+        Admin.list_instructors()
         instructor_id = input("Enter instructor ID to remove from course: ")
         if course_id in courses and instructor_id in courses[course_id]["instructors"]:
-            courses[course_id]["instructors"].remove(instructor_id)
+            courses[course_id]["instructors"] = ""
             System.save_json(COURSES_FILE, courses)
-            print("Instructor removed from course successfully")
+            print(Fore.GREEN+f"Instructor removed from course successfully"+Fore.RESET)
         else:
-            print("Instructor not found in course")
+            print(Fore.RED+"Instructor not found in course"+Fore.RESET)
 
     @staticmethod
     def delete_course():
         courses = System.load_json(COURSES_FILE)
+        Admin.list_courses()
         course_id = input("Enter course ID to delete: ")
         if course_id in courses:
             del courses[course_id]
             System.save_json(COURSES_FILE, courses)
-            print("Course deleted successfully")
+            print(Fore.GREEN+"Course deleted successfully"+Fore.RESET)
         else:
-            print("Course not found")
+            print(Fore.RED+"Course not found"+Fore.RESET)
 
 
 class Instructor:
@@ -313,18 +333,24 @@ class Instructor:
         Instructor.list_courses()
         course_id = input("Enter course ID: ")
         if course_id not in courses:
-            print("Course not found")
+            print(Fore.RED+"Course not found"+Fore.RESET)
             return
         Instructor.list_students()
         student_id = input("Enter student ID: ")
         if student_id not in students:
-            print("Student not found")
+            print(Fore.RED+"Student not found"+Fore.RESET)
             return
         
-        grade = input("Enter grade: ")
-        courses[course_id][student_id]["grade"] = grade
-        System.save_json(COURSES_FILE, courses)
-        print(f"Grade {grade} assigned to student ID: {student_id} in course ID: {course_id}")
+        grade = float(input("Enter grade out of 100: "))
+        while grade > 100:
+            grade = float(input(Fore.RED+"Enter grade out of 100 not grater than 100: "+Fore.RESET))
+        try:
+            courses[course_id][student_id]["grade"] = grade
+        except Exception as e :
+            print(Fore.RED+f"student ID: {student_id} not register in course : {courses[course_id]['name']}"+Fore.RESET)
+        else:
+            System.save_json(COURSES_FILE, courses)
+            print(Fore.GREEN+f"Grade {grade} assigned to student ID: {student_id} in course ID: {course_id}"+Fore.RESET)
 
     @staticmethod
     def view_grade_statistics():
@@ -332,14 +358,14 @@ class Instructor:
         Instructor.list_courses()
         course_id = input("Enter course ID: ")
         if course_id not in courses:
-            print("Course not found")
+            print(Fore.RED+"Course not found"+Fore.RESET)
             return
 
         course = courses[course_id]
         grade_list = [int(info["grade"]) for key, info in course.items() if key.isdigit()]
 
         if not grade_list:
-            print("No grades found for this course")
+            print(Fore.RED+"No grades found for this course"+Fore.RESET)
             return
 
         average_grade = sum(grade_list) / len(grade_list)
@@ -355,8 +381,8 @@ class Instructor:
 
         plt.show()
 
-        print(f"Grade statistics for course ID: {course_id}")
-        print(f"Average grade: {average_grade:.2f}")
+        print(Fore.GREEN+f"Grade statistics for course ID: {course_id}"+Fore.RESET)
+        print(Fore.GREEN+f"Average grade: {average_grade:.2f}"+Fore.RESET)
 
 
 class Student:
@@ -382,9 +408,9 @@ class Student:
         
         if course_id in courses and student_id in courses[course_id]:
             grade_list = [[course_id, courses[course_id]["name"], courses[course_id][student_id]["grade"]]]
-            print(tabulate(grade_list, headers=["Course ID", "Course Name", "Grade"], tablefmt="grid"))
+            print(Fore.BLUE+tabulate(grade_list, headers=["Course ID", "Course Name", "Grade"], tablefmt="grid")+Fore.RESET)
         else:
-            print("No records found for the given course ID and student ID")
+            print(Fore.RED+"No records found for the given course ID and student ID"+Fore.RESET)
 
 
 class Main:
@@ -409,19 +435,29 @@ class Main:
 
             if choice in ['Admin', 'Instructor', 'Student']:
                 if System.authenticate_user(choice):
-                    print(f"{choice} authenticated successfully.")
+                    print(Fore.GREEN+f"{choice} authenticated successfully."+Fore.RESET)
+                    input("Press Enter to Continue...")
+                    clear_terminal()
                     if choice == 'Admin':
                         self.admin_flow()
+                        input("Press Enter to Continue...")
+                        clear_terminal()
                     elif choice == 'Instructor':
                         self.instructor_flow()
+                        input("Press Enter to Continue...")
+                        clear_terminal()
                     elif choice == 'Student':
                         self.student_flow()
+                        input("Press Enter to Continue...")
+                        clear_terminal()
                 else:
-                    print("Authentication failed. Please try again.")
+                    print(Fore.RED+"Authentication failed. Please try again."+Fore.RESET)
+                    input("Press Enter to Continue...")
+                    clear_terminal()
             elif choice == 'Exit':
                 break
             else:
-                print("Invalid choice")
+                print(Fore.RED+"Invalid choice"+Fore.RESET)
 
     def admin_flow(self):
         while True:
@@ -452,6 +488,7 @@ class Main:
 
     def instructor_flow(self):
         while True:
+            clear_terminal()
             print(Fore.LIGHTMAGENTA_EX+text2art("Instructor Terminal ",font="small"))
             instructor_choice = Instructor.menu()
             if instructor_choice == "Assign Grade":
@@ -464,6 +501,7 @@ class Main:
 
     def student_flow(self):
         while True:
+            clear_terminal()
             print(Fore.LIGHTMAGENTA_EX+text2art("Student Terminal ",font="small"))
             student_choice = Student.menu()
             if student_choice == "View My Grades":
